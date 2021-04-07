@@ -30,5 +30,12 @@ Route::group(['middleware' => ['jwt.verify']], function (){
     Route::get('refresh', 'Api\Auth\AuthController@refresh');
     Route::get('me', 'Api\Auth\AuthController@getMe');
     Route::post('me/update', 'Api\Auth\AuthController@editMe');
+
+    Route::get('/posts/{username}', 'Api\Posts\UserPostsController@getUserPosts');
+    Route::post('/post', 'Api\Posts\UserPostsController@addPost');
+    Route::get('/post/{id}', 'Api\Posts\UserPostsController@getPostById');
+    Route::delete('/post/{id}', 'Api\Posts\UserPostsController@removePost');
+
+    Route::get('/user/{username}', 'Api\User\UserController@getUserByUsername');
 });
 
