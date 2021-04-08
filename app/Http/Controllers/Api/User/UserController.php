@@ -19,7 +19,7 @@ class UserController extends Controller {
         $user = User::getByUsername($username);
         if(!$username) $user = Auth::user();
 
-        return response()->json($user->getFollowers(), 201);
+        return response()->json($user->followers()->paginate(), 201);
         //return response()->json([], 200);
     }
 
@@ -27,7 +27,7 @@ class UserController extends Controller {
         $user = User::getByUsername($username);
         if(!$username) $user = Auth::user();
 
-        return response()->json($user->getFollowed(), 201);
+        return response()->json($user->followed()->paginate(), 201);
         //return response()->json([], 200);
     }
 
