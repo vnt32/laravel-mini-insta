@@ -18,8 +18,7 @@ class UserPostsModel extends Model {
     public static function getPostsByUsername($username){
         $user = User::where('username', $username)->first();
         if($user){
-            $posts = static::where('user_id', $user->id)->get();
-            return $posts;
+            return $user->posts()->paginate();
         }else{
             return [];
         }

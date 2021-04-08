@@ -53,7 +53,8 @@ class AuthController extends Controller
 
     public function getMe() {
         try{
-            $user = auth()->userOrFail();
+            $user = Auth::user()->username;
+            $user = User::getByUsername($user);
         } catch (\Tymon\JWTAuth\Exceptions\JWTException $e){
             return response()->json(['error' => true, 'message' => $e->getMessage()], 401);
         }

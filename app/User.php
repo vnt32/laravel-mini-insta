@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Models\UserPostsModel;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -50,7 +51,13 @@ class User extends Authenticatable implements JWTSubject
     }
 
     public static function getByUsername($username){
-        return static::where('username', $username)->first();
+        $user = static::where('username', $username)->first();
+        if(!is_null($user)) {
+            $user['followers'] = $user->followers()->count();
+            $user['followed'] = $user->followed()->count();
+            $user['posts'] = $user->posts()->count();
+        }
+        return $user;
     }
 
     public function followers()
@@ -82,6 +89,12 @@ class User extends Authenticatable implements JWTSubject
 
     public function isFollowed($id){
         return self::followers()->get()->where('pivot.follower_id', '=', $id)->count();
+    }
+
+
+    public function posts()
+    {
+        return $this->hasMany(UserPostsModel::class);
     }
 
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\User;
 
+use App\Models\UserPostsModel;
 use App\User;
 use App\Http\Controllers\Api\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -64,4 +65,10 @@ class UserController extends Controller {
 
         return response()->json(['error' => true, 'message' => 'You are not followed!'], 401);
     }
+
+    public function index(){
+        $user = User::find(1);
+        dd($user->posts()->get());
+    }
+
 }
