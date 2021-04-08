@@ -37,5 +37,13 @@ Route::group(['middleware' => ['jwt.verify']], function (){
     Route::delete('/post/{id}', 'Api\Posts\UserPostsController@removePost');
 
     Route::get('/user/{username}', 'Api\User\UserController@getUserByUsername');
+
+    Route::get('followers/{username}', 'Api\User\UserController@followers');
+    Route::get('followed/{username}', 'Api\User\UserController@followed');
+    Route::get('followers', 'Api\User\UserController@followers');
+    Route::get('followed', 'Api\User\UserController@followed');
+
+    Route::post('follow/{id}', 'Api\User\UserController@follow');
+    Route::post('unfollow/{id}', 'Api\User\UserController@unfollow');
 });
 
