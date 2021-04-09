@@ -12,7 +12,7 @@ class UserPostsModel extends Model {
     protected $fillable = [
         'user_id',
         'description',
-        'image'
+        'thumb'
     ];
 
     public static function getPostsByUsername($username){

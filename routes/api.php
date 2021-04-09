@@ -17,7 +17,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('', 'Api\Posts\UserPostsController@index');
+Route::post('/photo', 'Api\Posts\UserPostsController@index');
 
 Route::get('country', 'Api\Country\CountryController@country');
 Route::get('country/{id}', 'Api\Country\CountryController@countryById');

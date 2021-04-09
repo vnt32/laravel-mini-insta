@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Api\Posts;
 
 use App\Models\AttachmentsModel;
 use App\User;
+use Illuminate\Http\File;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 use Validator;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\Controller;
@@ -42,8 +45,18 @@ class UserPostsController extends Controller
         }
 
         $result = DB::transaction(function() use ($userId, $data) {
-            $post = UserPostsModel::create(['user_id' => $userId, 'description' => $data['description']]);
+            //Делаем thumb(предосмотр)
+            $requestImage = $data['attach'][0];
+            $requestImagePath = $requestImage->getRealPath() . '.jpg';
+            $interventionImage = Image::make($requestImage)
+                ->resize(400, null, function ($constraint) { $constraint->aspectRatio(); } )
+                ->encode('jpg');
+            $interventionImage->save($requestImagePath);
+            $thumb = Storage::putFileAs('thumbs', new File($requestImagePath), $userId.time().'thumb.jpg');
+            //создаем пост
+            $post = UserPostsModel::create(['user_id' => $userId, 'description' => $data['description'], 'thumb' => $thumb]);
 
+            //аттачим массив фоток
             $attachments = [];
             foreach ($data['attach'] as $key=>$file) {
                 $attachName = $userId.'_'.$post->id.'_'.$key.'_post_image'.time().'.'.$file->getClientOriginalExtension();
@@ -90,10 +103,15 @@ class UserPostsController extends Controller
         return response()->json($post::with('attachments', 'user')->get(),200);
     }
 
-    public function index(){
-        $attachments = UserPostsModel::find(1)::with('attachments', 'user')->get();
-
-        return response()->json($attachments);
+    public function index(Request $request){
+        $requestImage = request()->file('image');
+        $requestImagePath = $requestImage->getRealPath() . '.jpg';
+        $interventionImage = Image::make($requestImage)
+            ->resize(400, null, function ($constraint) { $constraint->aspectRatio(); } )
+            ->encode('jpg');
+        $interventionImage->save($requestImagePath);
+        $url = Storage::putFileAs('thumbs', new File($requestImagePath), 'thumbnail.jpg');
+        return response()->json(['url' => $url]);
     }
 
 }

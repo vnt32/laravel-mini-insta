@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\DBAL\TimestampType;
 
 class ChangeImageColumnUsersPosts extends Migration
 {
@@ -14,7 +15,7 @@ class ChangeImageColumnUsersPosts extends Migration
     public function up()
     {
         Schema::table('user_posts', function (Blueprint $table) {
-            $table->dropColumn('image');
+            $table->renameColumn('image', 'thumb');
         });
     }
 
@@ -26,7 +27,7 @@ class ChangeImageColumnUsersPosts extends Migration
     public function down()
     {
         Schema::table('user_posts', function (Blueprint $table) {
-            $table->string('image');
+            $table->renameColumn('thumb', 'image');
         });
     }
 }
