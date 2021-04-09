@@ -7,6 +7,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
+use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
@@ -53,9 +54,10 @@ class User extends Authenticatable implements JWTSubject
     public static function getByUsername($username){
         $user = static::where('username', $username)->first();
         if(!is_null($user)) {
-            $user['followers'] = $user->followers()->count();
-            $user['followed'] = $user->followed()->count();
-            $user['posts'] = $user->posts()->count();
+            $user->followers_count = $user->followers()->count();
+            $user->followed_count = $user->followed()->count();
+            $user->posts_count = $user->posts()->count();
+            if($user->id != Auth::id()) $user->followed = $user->isFollowed(Auth::id());
         }
         return $user;
     }

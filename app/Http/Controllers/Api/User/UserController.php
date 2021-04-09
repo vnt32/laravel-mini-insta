@@ -68,7 +68,7 @@ class UserController extends Controller {
 
     public function index(){
         $user = User::find(1);
-        dd($user->posts()->get());
+        dd($user->is_followed());
     }
 
 }
