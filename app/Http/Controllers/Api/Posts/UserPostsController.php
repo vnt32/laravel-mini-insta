@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api\Posts;
 
+use App\Models\AttachmentsModel;
 use App\User;
+use Illuminate\Support\Facades\DB;
 use Validator;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\Controller;
@@ -11,32 +13,59 @@ use Illuminate\Support\Facades\Auth;
 
 class UserPostsController extends Controller
 {
+
+
     public function getUserPosts($username): \Illuminate\Http\JsonResponse
     {
         return response()->json(UserPostsModel::getPostsByUsername($username));
     }
 
-    public function addPost(Request $req): \Illuminate\Http\JsonResponse
+    public function addPost(Request $req)
     {
+        $data = $req->all();
         $userId = Auth::id();
-        $description = null;
-        $image = null;
 
-        $rules = [
-            'image' => ['required','image', 'mimes:jpeg,png,jpg', 'max:5144']
-        ];
+        $validator = Validator::make(
+            $data,
+            [
+                'attach' => 'required',
+                'attach.*' => 'mimes:jpg,jpeg,png|max:5144'
+            ],[
+                'attach.*.required' => 'Please upload an image',
+                'attach.*.mimes' => 'Only jpeg,png images are allowed',
+                'attach.*.max' => 'Sorry! Maximum allowed size for an image is 5MB',
+            ]
+        );
 
-        $validator = Validator::make($req->all(), $rules);
-        if($validator->fails()){
+        if ($validator->fails()) {
             return response()->json(['error'=> true, 'message' => $validator->errors()], 401);
         }
-        $imageName = $userId.'_post_image'.time().'.'.request()->image->getClientOriginalExtension();
-        $image = $req->image->storeAs('post_images',$imageName);
 
-        if($req->description) $description = $req->description;
-        $postAfter = ['user_id' => $userId, 'description' => $description, 'image' => $image];
-        $post = UserPostsModel::create($postAfter);
-        return response()->json(['success' => true, 'post' => $post], 201);
+        $result = DB::transaction(function() use ($userId, $data) {
+            $post = UserPostsModel::create(['user_id' => $userId, 'description' => $data['description']]);
+
+            $attachments = [];
+            foreach ($data['attach'] as $key=>$file) {
+                $attachName = $userId.'_'.$post->id.'_'.$key.'_post_image'.time().'.'.$file->getClientOriginalExtension();
+                $attachSystem = $file->storeAs('post_images',$attachName);
+                $attach = AttachmentsModel::create(['name' => $attachName, 'path' => $attachSystem, 'post_id'=> $post->id]);
+                array_push($attachments, $attach);
+            }
+
+            //TODO: Добавить замбы
+            return ['post'=>$post, 'attachments'=>$attachments];
+        });
+
+
+        return response()->json(['success' => true, 'post' => $result['post']], 201);
+
+//        $imageName = $userId.'_post_image'.time().'.'.request()->image->getClientOriginalExtension();
+//        $image = $req->image->storeAs('post_images',$imageName);
+//
+//        if($req->description) $description = $req->description;
+//        $postAfter = ['user_id' => $userId, 'description' => $description, 'image' => $image];
+//        $post = UserPostsModel::create($postAfter);
+//        return response()->json(['success' => true, 'post' => $post], 201);
     }
 
     public function removePost($id){
@@ -58,8 +87,13 @@ class UserPostsController extends Controller
         if(is_null($post)){
             return response()->json(['error' => true, 'message' => 'Not found!'],404);
         }
-        $post['user'] = User::find($post->user_id);
-
-        return response()->json($post,200);
+        return response()->json($post::with('attachments', 'user')->get(),200);
     }
+
+    public function index(){
+        $attachments = UserPostsModel::find(1)::with('attachments', 'user')->get();
+
+        return response()->json($attachments);
+    }
+
 }

@@ -18,10 +18,20 @@ class UserPostsModel extends Model {
     public static function getPostsByUsername($username){
         $user = User::where('username', $username)->first();
         if($user){
-            return $user->posts()->paginate();
+            return $user->posts()->with('attachments')->paginate();
         }else{
-            return [];
+            return ['data' => [], 'last_page' => 1];
         }
 
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(AttachmentsModel::class, 'post_id', 'id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

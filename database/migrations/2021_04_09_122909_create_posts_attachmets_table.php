@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateUserPostsTable extends Migration
+class CreatePostsAttachmetsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,12 @@ class CreateUserPostsTable extends Migration
      */
     public function up()
     {
-        Schema::create('user_posts', function (Blueprint $table) {
+        Schema::create('posts_attachmets', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('user_id')->unsigned();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->string('image');
-            $table->text('description')->nullable();
+            $table->bigInteger('post_id')->unsigned();
+            $table->foreign('post_id')->references('id')->on('user_posts')->onDelete('cascade');
+            $table->string('name');
+            $table->string('path');
             $table->timestamps();
         });
     }
@@ -30,6 +30,6 @@ class CreateUserPostsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('user_posts');
+        Schema::dropIfExists('posts_attachmets');
     }
 }
