@@ -90,7 +90,7 @@ class User extends Authenticatable implements JWTSubject
     }
 
     public function isFollowed($id){
-        return self::followers()->get()->where('pivot.follower_id', '=', $id)->count();
+        return !! $this->followed()->where('followee_id', $id)->count();
     }
 
 

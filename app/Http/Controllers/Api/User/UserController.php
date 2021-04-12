@@ -28,7 +28,14 @@ class UserController extends Controller {
         $user = User::getByUsername($username);
         if(!$username) $user = Auth::user();
 
-        return response()->json($user->followed()->paginate(), 201);
+        $users = $user->followed()->paginate();
+        $updatedItems = $users->getCollection()->transform(function($item) use ($user){
+            if($user->id == Auth::id()) $item->followed = Auth::User()->isFollowed($item->id);
+            return $item;
+        });
+        $users->setCollection($updatedItems);
+
+        return response()->json($users, 201);
         //return response()->json([], 200);
     }
 
