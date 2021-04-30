@@ -114,4 +114,18 @@ class UserPostsController extends Controller
         return response()->json(['url' => $url]);
     }
 
+    public function getFeed(Request $request){
+        $user = Auth::user();
+        $userIds = $user->followed()->pluck('users.id');
+        $userIds[] = $user->id;
+        $feed = UserPostsModel::with(['user'])->whereIn('user_id', $userIds)->latest()->paginate();
+        $updatedFeed = $feed->getCollection()->transform(function($item) use ($user){
+            if($user->id != $item->user->id) $item->user->followed = $item->user->isFollowed($user->id);
+            return $item;
+        });
+        $feed->setCollection($updatedFeed);
+
+        return response()->json($feed);
+    }
+
 }
