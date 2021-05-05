@@ -18,7 +18,7 @@ class UserPostsModel extends Model {
     public static function getPostsByUsername($username){
         $user = User::where('username', $username)->first();
         if($user){
-            return $user->posts()->with('attachments')->paginate();
+            return $user->posts()->withCount('likes')->with('attachments')->paginate();
         }else{
             return ['data' => [], 'last_page' => 1];
         }
@@ -33,5 +33,9 @@ class UserPostsModel extends Model {
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function likes(){ //or simply likes
+        return $this->belongsToMany(User::class, 'likes', 'user_id', 'post_id')->withTimestamps();
     }
 }

@@ -100,7 +100,7 @@ class UserPostsController extends Controller
         if(is_null($post)){
             return response()->json(['error' => true, 'message' => 'Not found!'],404);
         }
-        return response()->json($post::with('attachments', 'user')->get(),200);
+        return response()->json($post::with('attachments', 'user')->withCount('likes')->get(),200);
     }
 
     public function index(Request $request){
@@ -118,7 +118,7 @@ class UserPostsController extends Controller
         $user = Auth::user();
         $userIds = $user->followed()->pluck('users.id');
         $userIds[] = $user->id;
-        $feed = UserPostsModel::with(['user'])->whereIn('user_id', $userIds)->latest()->paginate();
+        $feed = UserPostsModel::with(['user', 'attachments'])->withCount('likes')->whereIn('user_id', $userIds)->latest()->paginate();
         $updatedFeed = $feed->getCollection()->transform(function($item) use ($user){
             if($user->id != $item->user->id) $item->user->followed = $item->user->isFollowed($user->id);
             return $item;
@@ -126,6 +126,23 @@ class UserPostsController extends Controller
         $feed->setCollection($updatedFeed);
 
         return response()->json($feed);
+    }
+
+    public function rate(Request $req){
+        $validator = Validator::make($req->all(), ['post_id' => 'required']);
+        if($validator->fails()){
+            return response()->json(['error'=> true, 'message' => $validator->errors()], 401);
+        }
+
+        $user = Auth::user();
+        if($req->like == 'true'){
+            $user->likedPosts()->sync($req->post_id);
+        }else{
+            $user->likedPosts()->detach($req->post_id);
+        }
+        
+        return response()->json(['success'=> true, 'liked' => $req->like]);
+
     }
 
 }

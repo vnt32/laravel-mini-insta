@@ -35,6 +35,7 @@ Route::group(['middleware' => ['jwt.verify']], function (){
 
     Route::get('/posts/{username}', 'Api\Posts\UserPostsController@getUserPosts');
     Route::post('/post', 'Api\Posts\UserPostsController@addPost');
+    Route::post('/post/rate', 'Api\Posts\UserPostsController@rate');
     Route::get('/post/{id}', 'Api\Posts\UserPostsController@getPostById');
     Route::delete('/post/{id}', 'Api\Posts\UserPostsController@removePost');
     Route::get('/feed', 'Api\Posts\UserPostsController@getFeed');
