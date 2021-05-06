@@ -38,4 +38,8 @@ class UserPostsModel extends Model {
     public function likes(){ //or simply likes
         return $this->belongsToMany(User::class, 'likes', 'user_id', 'post_id')->withTimestamps();
     }
+
+    public function isLiked($id){
+        return !! $this->likes()->where('user_id', $id)->count();
+    }
 }

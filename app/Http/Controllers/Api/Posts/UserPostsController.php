@@ -121,6 +121,7 @@ class UserPostsController extends Controller
         $feed = UserPostsModel::with(['user', 'attachments'])->withCount('likes')->whereIn('user_id', $userIds)->latest()->paginate();
         $updatedFeed = $feed->getCollection()->transform(function($item) use ($user){
             if($user->id != $item->user->id) $item->user->followed = $item->user->isFollowed($user->id);
+            $item->liked = $item->isLiked($user->id);
             return $item;
         });
         $feed->setCollection($updatedFeed);
